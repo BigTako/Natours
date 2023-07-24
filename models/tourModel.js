@@ -36,7 +36,7 @@ const tourSchema = new mongoose.Schema(
       default: 4.5,
       min: [1, 'Rating must be above 1.0'],
       max: [5, 'Rating must be below 5.0'],
-      set: val => Math.round(val * 10) / 10 // 4.666666, 46.6666, 47, 4.7
+      set: val => Math.round(val * 10) / 10 // set - runs everytime it gets new value of ratingsAverage
     },
     ratingsQuantity: {
       type: Number,
@@ -50,7 +50,7 @@ const tourSchema = new mongoose.Schema(
       type: Number,
       validate: {
         validator: function(val) {
-          // this only points to current doc on NEW document creation
+          //this only points to current doc on new document creation
           return val < this.price;
         },
         message: 'Discount price ({VALUE}) should be below regular price'
@@ -104,9 +104,10 @@ const tourSchema = new mongoose.Schema(
         day: Number
       }
     ],
+    // guides: Array, - for embedding
     guides: [
       {
-        type: mongoose.Schema.ObjectId,
+        type: mongoose.Schema.ObjectId, // for refferencing
         ref: 'User'
       }
     ]
@@ -117,11 +118,12 @@ const tourSchema = new mongoose.Schema(
   }
 );
 
-// tourSchema.index({ price: 1 });
+// tourSchema.index({price: 1}); // put an index on the price field(1 - sorting by ascending order, -1 - descending)
 tourSchema.index({ price: 1, ratingsAverage: -1 });
 tourSchema.index({ slug: 1 });
-tourSchema.index({ startLocation: '2dsphere' });
+tourSchema.index({ startLocation: '2dsphere' }); // this start location shoud be indexed to 2dsphere(Earth like shpere)
 
+// Virtual populate
 tourSchema.virtual('durationWeeks').get(function() {
   return this.duration / 7;
 });
@@ -129,8 +131,8 @@ tourSchema.virtual('durationWeeks').get(function() {
 // Virtual populate
 tourSchema.virtual('reviews', {
   ref: 'Review',
-  foreignField: 'tour',
-  localField: '_id'
+  foreignField: 'tour', // field referencing for parent in child
+  localField: '_id' // field referencing for parent in parent
 });
 
 // DOCUMENT MIDDLEWARE: runs before .save() and .create()
@@ -139,24 +141,34 @@ tourSchema.pre('save', function(next) {
   next();
 });
 
-// tourSchema.pre('save', async function(next) {
-//   const guidesPromises = this.guides.map(async id => await User.findById(id));
-//   this.guides = await Promise.all(guidesPromises);
+/**
+ * Translates array of guides IDS(field 'guides') to array of objects,
+ * available to work with.
+ */
+// tourSchema.pre('save', async function (next) {
+//   const guidesPromises = this.guides.map(async (id) => await User.findById(id)); // arrya of promises
+//   this.guides = await Promise.all(guidesPromises); // execute all promises
 //   next();
 // });
 
-// tourSchema.pre('save', function(next) {
-//   console.log('Will save document...');
+// tourSchema.pre('save', function (next) {
+//   console.log('Will save document');
 //   next();
 // });
 
-// tourSchema.post('save', function(doc, next) {
+// tourSchema.post('save', function (doc, next) {
 //   console.log(doc);
 //   next();
 // });
 
-// QUERY MIDDLEWARE
-// tourSchema.pre('find', function(next) {
+//QUERY MIDDLEWARE
+// tourSchema.pre('find', function (next) {
+
+/**
+ * Query middleware which fills the field called 'guides' in tourSchema.
+ * Parameters of population defined in schema itself.
+ * Hadles each query starts from 'find'(find, findOne...)
+ */
 tourSchema.pre(/^find/, function(next) {
   this.find({ secretTour: { $ne: true } });
 
@@ -167,8 +179,8 @@ tourSchema.pre(/^find/, function(next) {
 tourSchema.pre(/^find/, function(next) {
   this.populate({
     path: 'guides',
-    select: '-__v -passwordChangedAt'
-  });
+    select: '-__v -passwordChangedAt' // do not select fields specified
+  }); // populate - fill the field called guides
 
   next();
 });

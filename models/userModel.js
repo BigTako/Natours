@@ -68,11 +68,13 @@ userSchema.pre('save', function(next) {
 });
 
 userSchema.pre(/^find/, function(next) {
-  // this points to the current query
+  //if you`ll user arrow function you will not have an access to this keyword
+  // this points to current query
   this.find({ active: { $ne: false } });
   next();
 });
 
+//this function is available in any document
 userSchema.methods.correctPassword = async function(
   candidatePassword,
   userPassword
@@ -102,7 +104,7 @@ userSchema.methods.createPasswordResetToken = function() {
     .update(resetToken)
     .digest('hex');
 
-  console.log({ resetToken }, this.passwordResetToken);
+  // console.log({ resetToken }, this.passwordResetToken);
 
   this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
 

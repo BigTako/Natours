@@ -56,7 +56,7 @@ exports.getOne = (Model, popOptions) =>
     if (!doc) {
       return next(new AppError('No document found with that ID', 404));
     }
-
+    // Tour.findOne({_id: req.params.id})
     res.status(200).json({
       status: 'success',
       data: {
@@ -76,10 +76,15 @@ exports.getAll = Model =>
       .sort()
       .limitFields()
       .paginate();
-    // const doc = await features.query.explain();
+    // const doc = await features.query.explain(); //gives a full info about the query
     const doc = await features.query;
+    // const query = Tour.find()
+    //   .where('duration')
+    //   .equals(5)
+    //   .where('difficulty')
+    //   .equals('easy');
 
-    // SEND RESPONSE
+    //SEND RESPONSE
     res.status(200).json({
       status: 'success',
       results: doc.length,

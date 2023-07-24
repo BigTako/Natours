@@ -12002,7 +12002,7 @@ exports.showAlert = showAlert;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.login = void 0;
+exports.logout = exports.login = void 0;
 var _axios = _interopRequireDefault(require("axios"));
 var _alerts = require("./alerts");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -12052,19 +12052,39 @@ var login = /*#__PURE__*/function () {
     return _ref.apply(this, arguments);
   };
 }();
-
-// export const logout = async () => {
-//   try {
-//     const res = await axios({
-//       method: 'GET',
-//       url: 'http://127.0.0.1:3000/api/v1/users/logout',
-//     });
-//     if ((res.data.status = 'success')) location.reload(true);
-//   } catch (err) {
-//     console.log(err.response);
-//     showAlert('error', 'Error logging out! Try again.');
-//   }
-// };
+exports.login = login;
+var logout = /*#__PURE__*/function () {
+  var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
+    var res;
+    return _regeneratorRuntime().wrap(function _callee2$(_context2) {
+      while (1) switch (_context2.prev = _context2.next) {
+        case 0:
+          _context2.prev = 0;
+          _context2.next = 3;
+          return (0, _axios.default)({
+            method: 'GET',
+            url: 'http://127.0.0.1:3000/api/v1/users/logout'
+          });
+        case 3:
+          res = _context2.sent;
+          if (res.data.status = 'success') location.reload(true);
+          _context2.next = 11;
+          break;
+        case 7:
+          _context2.prev = 7;
+          _context2.t0 = _context2["catch"](0);
+          console.log(_context2.t0.response);
+          (0, _alerts.showAlert)('error', 'Error logging out! Try again.');
+        case 11:
+        case "end":
+          return _context2.stop();
+      }
+    }, _callee2, null, [[0, 7]]);
+  }));
+  return function logout() {
+    return _ref2.apply(this, arguments);
+  };
+}();
 
 // const login = async (email, password) => {
 //   try {
@@ -12089,7 +12109,7 @@ var login = /*#__PURE__*/function () {
 //   const password = document.getElementById('password').value;
 //   login(email, password);
 // });
-exports.login = login;
+exports.logout = logout;
 },{"axios":"../../node_modules/axios/index.js","./alerts":"alerts.js"}],"index.js":[function(require,module,exports) {
 "use strict";
 
@@ -12267,7 +12287,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "60766" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "49787" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];
