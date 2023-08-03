@@ -4,6 +4,7 @@ include _reviewCard
 
 //-what ever is written in this block will be appended to already existing code in base.pug
 block append head
+    script(src="https://js.stripe.com/v3/")
     //- script(src='/js/mapbox.js')
 
 mixin overviewBox(label, text, icon)
@@ -84,4 +85,8 @@ block content
             .cta__content
                 h2.heading-secondary What are you waiting for?
                 p.cta__text= `${tour.duration} ${tour.duration === 1 ? 'day' : 'days'}. 1 adventure. Infinite memories. Make it yours today!`
-                button.btn.btn--green.span-all-rows Book tour now!
+                //-data-tour-id attribute will be automatically converted to dataset.tourId in js side
+                if user
+                    button.btn.btn--green.span-all-rows#book-tour(data-tour-id=`${tour.id}`) Book tour now!
+                else
+                    a.btn.btn--green.span-all-rows(href='/login') Login in to book tour!
