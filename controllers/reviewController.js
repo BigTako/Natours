@@ -1,6 +1,8 @@
 const Review = require('./../models/reviewModel');
+const Booking = require('./../models/bookingModel');
 const factory = require('./handlerFactory');
-// const catchAsync = require('./../utils/catchAsync');
+const catchAsync = require('./../utils/catchAsync');
+const AppError = require('./../utils/appError');
 
 // exports.getAllReviews = catchAsync(async (req, res, next) => {
 //   const reviews = await Review.find(filter);
@@ -38,6 +40,28 @@ exports.setTourUserIds = (req, res, next) => {
 
 exports.getAllReviews = factory.getAll(Review);
 exports.getReview = factory.getOne(Review);
-exports.createReview = factory.createOne(Review);
+
+exports.createReview = catchAsync(async (req, res, next) => {
+  const bookingExists = await Booking.exists({
+    tour: req.body.tour,
+    user: req.body.user
+  });
+
+  if (!bookingExists) {
+    return next(
+      new AppError('Forbidden. Book tour to be able to review it.', 403)
+    );
+  }
+
+  const doc = await Review.create(req.body);
+
+  res.status(201).json({
+    status: 'success',
+    data: {
+      data: doc
+    }
+  });
+});
+
 exports.updateReview = factory.updateOne(Review);
 exports.deleteReview = factory.deleteOne(Review);

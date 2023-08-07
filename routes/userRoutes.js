@@ -6,6 +6,7 @@ const authController = require('./../controllers/authController');
 const router = express.Router();
 
 router.post('/signup', authController.signup);
+router.get('/accountActivation/:token', authController.activateAccount);
 router.post('/login', authController.login);
 router.get('/logout', authController.logout);
 
@@ -25,7 +26,6 @@ router.patch(
   userController.updateMe
 );
 router.delete('/deleteMe', userController.deleteMe);
-
 router.use(authController.restrictTo('admin'));
 
 router
@@ -38,5 +38,7 @@ router
   .get(userController.getUser)
   .patch(userController.updateUser)
   .delete(userController.deleteUser);
+
+router.get('/:userId/bookings', userController.getUserBookings);
 
 module.exports = router;

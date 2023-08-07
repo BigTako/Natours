@@ -12,7 +12,7 @@ const signToken = id => {
   });
 };
 
-const createSendToken = (user, statusCode, res) => {
+const createToken = (user, res) => {
   const token = signToken(user._id);
   const cookieOptions = {
     expires: new Date(
@@ -23,6 +23,21 @@ const createSendToken = (user, statusCode, res) => {
   if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
 
   res.cookie('jwt', token, cookieOptions);
+  return token;
+};
+
+const createSendToken = (user, statusCode, res) => {
+  const token = createToken(user, res);
+  // const token = signToken(user._id);
+  // const cookieOptions = {
+  //   expires: new Date(
+  //     Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+  //   ),
+  //   httpOnly: true
+  // };
+  // if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
+
+  // res.cookie('jwt', token, cookieOptions);
 
   // Remove password from output
   user.password = undefined;
@@ -37,6 +52,8 @@ const createSendToken = (user, statusCode, res) => {
 };
 
 exports.signup = catchAsync(async (req, res, next) => {
+  const activationToken = crypto.randomBytes(32).toString('hex');
+
   const newUser = await User.create({
     name: req.body.name,
     email: req.body.email,
@@ -45,12 +62,66 @@ exports.signup = catchAsync(async (req, res, next) => {
     passwordConfirm: req.body.passwordConfirm,
     passwordChangedAt: req.body.passwordChangedAt,
     passwordResetToken: req.body.passwordResetToken,
-    passwordResetExpires: req.body.passwordResetExpires
+    passwordResetExpires: req.body.passwordResetExpires,
+    accountActivationToken: crypto
+      .createHash('sha256')
+      .update(activationToken)
+      .digest('hex'),
+    accountActivationExpires: Date.now() + 12 * 60 * 60 * 1000 // after 12 hours
   });
-  const url = `${req.protocol}://${req.get('host')}/me`;
-  console.log(url);
-  await new Email(newUser, url).sendWelcome();
-  createSendToken(newUser, 201, res);
+
+  // console.log(newUser);
+  // 1) Get user based on the token
+  try {
+    const activationURL = `${req.protocol}://${req.get(
+      'host'
+    )}/api/v1/users/accountActivation/${newUser.accountActivationToken}`;
+
+    await new Email(newUser, activationURL).sendWelcome();
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Success! Activate your account via url in the email.'
+    });
+  } catch (err) {
+    newUser.accountActivationToken = undefined;
+    newUser.accountActivationExpires = undefined;
+    await newUser.save({ validateBeforeSave: false });
+
+    return next(
+      new AppError('There was an error sending the email. Try again later!'),
+      500
+    );
+  }
+});
+
+exports.activateAccount = catchAsync(async (req, res, next) => {
+  // 1) Get user based on the token
+
+  const user = await User.findOneAndUpdate(
+    {
+      accountActivationToken: req.params.token,
+      accountActivationExpires: { $gt: Date.now() }
+    },
+    {
+      accountActivationToken: undefined,
+      accountActivationExpires: undefined,
+      active: true
+    },
+    {
+      new: true,
+      runValidators: false
+    }
+  );
+
+  // 2) If token has not expired, and there is user, set the new password
+  if (!user) {
+    return next(new AppError('Token is invalid or has expired', 400));
+  }
+
+  // 4) Log the user in, send JWT
+  createToken(user, res);
+  res.redirect(302, '/me');
 });
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -61,7 +132,10 @@ exports.login = catchAsync(async (req, res, next) => {
     return next(new AppError('Please provide email and password!', 400));
   }
   // 2) Check if user exists && password is correct
-  const user = await User.findOne({ email }).select('+password');
+  const user = await User.findOne({
+    email,
+    accountActivationToken: { $exists: false }
+  }).select('+password');
 
   if (!user || !(await user.correctPassword(password, user.password))) {
     return next(new AppError('Incorrect email or password', 401));

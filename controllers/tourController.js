@@ -1,6 +1,7 @@
 const multer = require('multer');
 const sharp = require('sharp');
 const Tour = require('./../models/tourModel');
+const Booking = require('./../models/bookingModel');
 const catchAsync = require('./../utils/catchAsync');
 const factory = require('./handlerFactory');
 const AppError = require('./../utils/appError');
@@ -306,6 +307,17 @@ exports.getDistances = catchAsync(async (req, res, next) => {
     status: 'success',
     data: {
       data: distances
+    }
+  });
+});
+
+exports.getTourBookings = catchAsync(async (req, res, next) => {
+  const tourBookings = await Booking.find({ tour: req.params.tourId });
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      data: tourBookings
     }
   });
 });

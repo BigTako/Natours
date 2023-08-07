@@ -1,6 +1,7 @@
 const multer = require('multer');
 const sharp = require('sharp');
 const User = require('./../models/userModel');
+const Booking = require('./../models/bookingModel');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
 const factory = require('./handlerFactory');
@@ -126,3 +127,14 @@ exports.getAllUsers = factory.getAll(User);
 // Do NOT update passwords with this!
 exports.updateUser = factory.updateOne(User);
 exports.deleteUser = factory.deleteOne(User);
+
+exports.getUserBookings = catchAsync(async (req, res, next) => {
+  const userBookings = await Booking.find({ user: req.params.userId });
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      data: userBookings
+    }
+  });
+});

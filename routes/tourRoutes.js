@@ -58,4 +58,6 @@ router
     tourController.deleteTour
   );
 
+router.get('/:tourId/bookings', tourController.getTourBookings);
+
 module.exports = router;
