@@ -1,19 +1,30 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const Tour = require('./../models/tourModel');
 const Booking = require('./../models/bookingModel');
+const TourDate = require('./../models/tourDateModel');
 const catchAsync = require('./../utils/catchAsync');
 const factory = require('./handlerFactory');
+const AppError = require('./../utils/appError');
 // const AppError = require('./../utils/appError');
 
 exports.getCheckoutSession = catchAsync(async (req, res, next) => {
   // 1) Get the currently booked tour
   const tour = await Tour.findById(req.params.tourId);
+  // const dates = JSON.parse(tour.startDatesObj);
+  const date = tour.startDatesObj.find(
+    obj => obj._id.toString() === req.query.date
+  );
+
+  if (date.participants.length + 1 > tour.maxGroupSize) {
+    return next(new AppError('All free places of tour were reserved', 400));
+  }
+
   //2) Create checkout session
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ['card'],
     success_url: `${req.protocol}://${req.get('host')}/?tour=${
       req.params.tourId
-    }&user=${req.user.id}&price=${tour.price}`, // page user will be transfered to after successful payment
+    }&user=${req.user.id}&price=${tour.price}&date=${req.query.date}`, // page user will be transfered to after successful payment
     cancel_url: `${req.protocol}://${req.get('host')}/tour/${tour.slug}`, // page user will be transfered to after canceling of payment
     customer_email: req.user.email,
     client_reference_id: req.params.tourId,
@@ -42,10 +53,14 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
 
 exports.createBookingCheckout = catchAsync(async (req, res, next) => {
   // This is only TEMPORARY, because it`s UNSECURE: everyon can make bookings without paying
-  const { tour, user, price } = req.query;
+  const { tour, user, price, date } = req.query;
   if (!tour && !user && !price) {
     return next();
   }
+  await TourDate.findByIdAndUpdate(date, {
+    $push: { participants: user },
+    $inc: { soldOut: 1 }
+  });
   await Booking.create({ tour, user, price });
 
   res.redirect(req.originalUrl.split('?')[0]);

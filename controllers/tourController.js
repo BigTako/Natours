@@ -1,7 +1,9 @@
 const multer = require('multer');
 const sharp = require('sharp');
+const mongoose = require('mongoose');
 const Tour = require('./../models/tourModel');
 const Booking = require('./../models/bookingModel');
+const TourDate = require('./../models/tourDateModel');
 const catchAsync = require('./../utils/catchAsync');
 const factory = require('./handlerFactory');
 const AppError = require('./../utils/appError');
@@ -59,7 +61,7 @@ exports.resizeTourImages = catchAsync(async (req, res, next) => {
       req.body.images.push(filename);
     })
   );
-  console.log(req.body);
+  // console.log(req.body);
   next();
 });
 
@@ -318,6 +320,33 @@ exports.getTourBookings = catchAsync(async (req, res, next) => {
     status: 'success',
     data: {
       data: tourBookings
+    }
+  });
+});
+
+exports.createTourDate = catchAsync(async (req, res, next) => {
+  const newTourDateId = mongoose.Types.ObjectId();
+
+  const newTour = await Tour.findByIdAndUpdate(
+    req.params.id,
+    { $push: { startDatesObj: newTourDateId } },
+    { new: true }
+  );
+
+  await TourDate.create({
+    ...req.body,
+    _id: newTourDateId,
+    tour: req.params.id
+  });
+
+  if (!newTour) {
+    return next(new AppError('Document not found', 404));
+  }
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      data: newTour
     }
   });
 });

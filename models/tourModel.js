@@ -76,6 +76,12 @@ const tourSchema = new mongoose.Schema(
       select: false
     },
     startDates: [Date],
+    startDatesObj: [
+      {
+        type: mongoose.Schema.ObjectId, // for refferencing
+        ref: 'TourDate'
+      }
+    ],
     secretTour: {
       type: Boolean,
       default: false
@@ -180,15 +186,18 @@ tourSchema.pre(/^find/, function(next) {
   this.populate({
     path: 'guides',
     select: '-__v -passwordChangedAt' // do not select fields specified
+  }).populate({
+    path: 'startDatesObj',
+    select: 'date participants soldOut'
   }); // populate - fill the field called guides
 
   next();
 });
 
-tourSchema.post(/^find/, function(docs, next) {
-  console.log(`Query took ${Date.now() - this.start} milliseconds!`);
-  next();
-});
+// tourSchema.post(/^find/, function(docs, next) {
+//   console.log(`Query took ${Date.now() - this.start} milliseconds!`);
+//   next();
+// });
 
 // AGGREGATION MIDDLEWARE
 // tourSchema.pre('aggregate', function(next) {

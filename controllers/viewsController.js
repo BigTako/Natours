@@ -27,6 +27,9 @@ exports.getTour = catchAsync(async (req, res, next) => {
   if (!tour) {
     return next(new AppError('There is no tour with that name.', 404));
   }
+  tour.startDatesObj = tour.startDatesObj.filter(
+    date => date.participants.length + 1 <= tour.maxGroupSize
+  );
   // 2) Build template
 
   // Render template using data from 1

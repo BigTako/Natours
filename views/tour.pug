@@ -42,6 +42,14 @@ block content
                     +overviewBox('Difficulty', tour.difficulty, 'trending-up')
                     +overviewBox('Participants', `${tour.maxGroupSize} people`, 'user')
                     +overviewBox('Rating', `${tour.ratingsAverage} / 5`, 'star')
+                    h2.heading-secondary.ma-bt-lg Select date
+                    select(id="tour-date-select")
+                        if tour.startDatesObj.length === 0
+                            option(value=`dates-are-empty` disabled) All dates are reserved 
+                        else
+                            each date in tour.startDatesObj
+                                option(value=`${date._id}`)= `${date.date.toLocaleString()} ${date.participants.length}/${tour.maxGroupSize} people`
+
                 .overview-box__group
                     h2.heading-secondary.ma-bt-lg Your tour guides
                     each guide in tour.guides
@@ -74,18 +82,23 @@ block content
                 +reviewCard(review)
 
 
+
     section.section-cta
         .cta
-            .cta__img.cta__img--logo
-                img(src='/img/logo-white.png', alt='Natours logo')
-            
-            img.cta__img.cta__img--1(src=`/img/tours/${tour.images[1]}`, alt='Tour picture')
-            img.cta__img.cta__img--2(src=`/img/tours/${tour.images[2]}`, alt='Tour picture')
-            .cta__content
-                h2.heading-secondary What are you waiting for?
-                p.cta__text= `${tour.duration} ${tour.duration === 1 ? 'day' : 'days'}. 1 adventure. Infinite memories. Make it yours today!`
-                //-data-tour-id attribute will be automatically converted to dataset.tourId in js side
-                if user
-                    button.btn.btn--green.span-all-rows#book-tour(data-tour-id=`${tour.id}`) Book tour now!
-                else
-                    a.btn.btn--green.span-all-rows(href='/login') Login in to book tour!
+            if tour.startDatesObj.length !== 0
+                .cta__img.cta__img--logo
+                    img(src='/img/logo-white.png', alt='Natours logo')
+
+                img.cta__img.cta__img--1(src=`/img/tours/${tour.images[1]}`, alt='Tour picture')
+                img.cta__img.cta__img--2(src=`/img/tours/${tour.images[2]}`, alt='Tour picture')
+                .cta__content
+                    h2.heading-secondary What are you waiting for?
+                    p.cta__text= `${tour.duration} ${tour.duration === 1 ? 'day' : 'days'}. 1 adventure. Infinite memories. Make it yours today!`
+                    //-data-tour-id attribute will be automatically converted to dataset.tourId in js side
+                    if user
+                        button.btn.btn--green.span-all-rows#book-tour(data-tour-id=`${tour.id}`) Book tour now!
+                    else
+                        a.btn.btn--green.span-all-rows(href='/login') Login in to book tour!
+            else
+                h2.heading-secondary= `Unfortunately, all dates are already reserved:(`
+                p.cta__text= `But don't be upset, we're sure you will find something better in main page!`

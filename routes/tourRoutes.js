@@ -2,7 +2,7 @@ const express = require('express');
 const tourController = require('./../controllers/tourController');
 const authController = require('./../controllers/authController');
 const reviewRouter = require('./../routes/reviewRoutes');
-
+const tourDateRouter = require('./../routes/tourDateRoutes');
 const router = express.Router();
 
 // router.param('id', tourController.checkID);
@@ -59,5 +59,7 @@ router
   );
 
 router.get('/:tourId/bookings', tourController.getTourBookings);
+
+router.route('/:id/startDates').post(tourController.createTourDate);
 
 module.exports = router;
