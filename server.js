@@ -35,3 +35,11 @@ process.on('unhandledRejection', err => {
     process.exit(1);
   });
 });
+
+// heroku feature, after every 24h heroku app is shutted down, so server have to handle it properly
+process.on('SIGTERM', () => {
+  console.log('SIGTERM RECEIVED. Shutting down gracefully...');
+  server.close(() => {
+    console.log('Process terminated');
+  });
+});
