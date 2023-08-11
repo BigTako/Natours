@@ -74,22 +74,14 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
 const createBookingCheckout = async session => {
   // console.log(session);
   const tour = session.client_reference_id;
-  const tourFounded = Tour.findOne({ _id: tour });
   const user = User.findOne({ email: session.customer_email });
   const price = session.amount_total / 100;
   console.log(session);
-  console.log(
-    `User: ${session.customer_email} - ${
-      session.client_reference_id
-    } - ${session.amount_total / 100}`
-  );
-  console.log(
-    `Founded data: ${JSON.stringify(tourFounded, null, 2)} - ${tour} - ${price}`
-  );
-  await Booking.create({ tour, user: user.id, price });
+
+  await Booking.create({ tour, user: user.id || user._id, price });
 };
 
-exports.webhookCheckout = (req, res, next) => {
+exports.webhookCheckout = async (req, res, next) => {
   const signature = req.headers['stripe-signature'];
   let event;
   try {
@@ -98,12 +90,11 @@ exports.webhookCheckout = (req, res, next) => {
       signature,
       process.env.STRIPE_WEBHOOK_SECRET
     ); // body needs to be in raw form(available as a stream)
+    if (event.type === 'checkout.session.completed') {
+      await createBookingCheckout(event.data.object);
+    }
   } catch (err) {
     return res.status(400).send(`Webhook error: ${err.message}`);
-  }
-
-  if (event.type === 'checkout.session.completed') {
-    createBookingCheckout(event.data.object);
   }
 
   res.status(200).json({ received: true });
