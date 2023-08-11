@@ -19,13 +19,6 @@ const bookingRouter = require('./routes/bookingRoutes');
 const viewRouter = require('./routes/viewRoutes');
 
 const app = express();
-
-app.enable('trust proxy');
-
-app.set('view engine', 'pug');
-app.set('views', path.join(__dirname, 'views'));
-
-// 1) GLOBAL MIDDLEWARES
 // Implement CORS
 app.use(cors());
 //Access-Control-Allow-Origin *
@@ -35,6 +28,14 @@ app.use(cors());
 //});
 
 app.options('*', cors());
+
+app.enable('trust proxy');
+
+app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, 'views'));
+
+// 1) GLOBAL MIDDLEWARES
+
 // app.options('/api/v1/tours/:id', cors());
 
 // Serving static files
