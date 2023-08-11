@@ -82,7 +82,9 @@ const createBookingCheckout = async session => {
       session.client_reference_id
     } - ${session.amount_total / 100}`
   );
-  console.log(`Founded data: ${user} - ${tour} - ${price}`);
+  console.log(
+    `Founded data: ${JSON.stringify(user, null, 2)} - ${tour} - ${price}`
+  );
   await Booking.create({ tour, user: user._id, price });
 };
 
