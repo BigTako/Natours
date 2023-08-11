@@ -5,6 +5,7 @@ import { login, logout } from './login';
 import { signup } from './signup';
 import { updateSettings } from './updateSettings';
 import { bookTour } from './stripe';
+import { showAlert } from './alerts';
 //DOM ELEMENTS
 const loginForm = document.querySelector('.form--login');
 const signupForm = document.querySelector('.form--signup');
@@ -73,7 +74,10 @@ if (bookBtn)
   bookBtn.addEventListener('click', e => {
     e.target.textContent = 'Processing...';
     const selectedDate = tourDateSelect.value;
-    console.log(selectedDate);
+    // console.log(selectedDate);
     const { tourId } = e.target.dataset;
     bookTour(tourId, selectedDate);
   });
+
+const alertMessage = document.querySelector('body').dataset.alert;
+if (alert) showAlert('success', alertMessage, 20);

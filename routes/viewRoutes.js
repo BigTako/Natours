@@ -5,6 +5,8 @@ const bookingController = require('../controllers/bookingController');
 
 const router = express.Router();
 
+router.use(viewsController.alerts);
+
 // router.get('/', (req, res) => {
 //   res.status(200).render('base', {
 //     // transfer data into pug template
