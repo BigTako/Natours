@@ -26,11 +26,11 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
     // success_url: `${req.protocol}://${req.get('host')}/my-tours/?tour=${
     //   req.params.tourId
     // }&user=${req.user.id}&price=${tour.price}&date=${req.query.date}`, // page user will be transfered to after successful payment
-    // cancel_url: `${req.protocol}://${req.get('host')}/tour/${tour.slug}`, // page user will be transfered to after canceling of payment
+    cancel_url: `${req.protocol}://${req.get('host')}/tour/${tour.slug}`, // page user will be transfered to after canceling of payment
     success_url: `${req.protocol}://${req.get('host')}/my-tours`,
     customer_email: req.user.email,
     client_reference_id: req.params.tourId,
-    line_items: [
+    custom_fields: [
       {
         price_data: {
           currency: 'usd',
@@ -72,9 +72,9 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
 //   res.redirect(req.originalUrl.split('?')[0]);
 // });
 const createBookingCheckout = async session => {
-  const tour = session.client_reference_id;
-  const user = User.findOne({ email: session.customer_email }).id;
-  const price = session.line_items[0].amount / 100;
+  const tour = session.data.object.client_reference_id;
+  const user = User.findOne({ email: session.data.object.customer_email }).id;
+  const price = session.data.object.amount_total / 100;
   await Booking.create({ tour, user, price });
 };
 
