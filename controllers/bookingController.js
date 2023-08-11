@@ -74,6 +74,7 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
 const createBookingCheckout = async session => {
   // console.log(session);
   const tour = session.client_reference_id;
+  const tourFounded = Tour.findOne({ _id: tour });
   const user = User.findOne({ email: session.customer_email });
   const price = session.amount_total / 100;
   console.log(session);
@@ -82,9 +83,8 @@ const createBookingCheckout = async session => {
       session.client_reference_id
     } - ${session.amount_total / 100}`
   );
-  const dupuser = { id: user.id || user._id, email: user.email };
   console.log(
-    `Founded data: ${JSON.stringify(dupuser, null, 2)} - ${tour} - ${price}`
+    `Founded data: ${JSON.stringify(tourFounded, null, 2)} - ${tour} - ${price}`
   );
   await Booking.create({ tour, user: user.id, price });
 };

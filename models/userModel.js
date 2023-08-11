@@ -72,7 +72,7 @@ userSchema.pre('save', function(next) {
 userSchema.pre(/^find/, function(next) {
   //if you`ll user arrow function you will not have an access to this keyword
   // this points to current query
-  this.find({ active: { $ne: false } });
+  // this.find({ active: { $ne: false } });
   next();
 });
 
