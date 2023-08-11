@@ -82,10 +82,11 @@ const createBookingCheckout = async session => {
       session.client_reference_id
     } - ${session.amount_total / 100}`
   );
+  const dupuser = { id: user.id || user._id, email: user.email };
   console.log(
-    `Founded data: ${JSON.stringify(user, null, 2)} - ${tour} - ${price}`
+    `Founded data: ${JSON.stringify(dupuser, null, 2)} - ${tour} - ${price}`
   );
-  await Booking.create({ tour, user: user._id, price });
+  await Booking.create({ tour, user: user.id, price });
 };
 
 exports.webhookCheckout = (req, res, next) => {
