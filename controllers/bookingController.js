@@ -30,7 +30,7 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
     success_url: `${req.protocol}://${req.get('host')}/my-tours`,
     customer_email: req.user.email,
     client_reference_id: req.params.tourId,
-    custom_fields: [
+    line_items: [
       {
         price_data: {
           currency: 'usd',
