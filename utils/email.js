@@ -5,9 +5,9 @@ const htmlToText = require('html-to-text');
 module.exports = class Email {
   constructor(user, url) {
     this.to = user.email;
-    this.firstName = user.name.split(' ')[0];
+    this.firstName = user.fullName.split(' ')[0];
     this.url = url;
-    this.from = `Jonas Schmedtmann <${process.env.EMAIL_FROM}>`;
+    this.from = `<${process.env.EMAIL_FROM}>`;
   }
 
   newTransport() {
@@ -16,10 +16,10 @@ module.exports = class Email {
       return 1;
     }
     return nodemailer.createTransport({
-      service: 'Mailgun',
+      service: 'gmail',
       auth: {
-        user: process.env.MAILGUN_USERNAME,
-        pass: process.env.MAILGUN_PASSWORD
+        user: `${process.env.EMAIL_USERNAME}`,
+        pass: `${process.env.EMAIL_PASSWORD}`
       }
     });
   }
